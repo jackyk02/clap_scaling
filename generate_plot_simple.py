@@ -225,6 +225,14 @@ def generate_simple_comparison_plot():
     # Define the specific sample sizes to test
     num_samples_range = [1, 10, 100]
     
+    # Define corresponding training FLOPS for x-axis
+    # Per inference (1 candidate) ≈ 3.7 × 10^12 FLOPs
+    training_flops = [3.7e12, 3.7e13, 3.7e14]  # 3.7T, 37T, 370T FLOPS
+    
+    # Manual hybrid scaling data
+    hybrid_nrmse_means = [0.16169, 0.09, 0.033]
+    hybrid_nrmse_stds = [0.0, 0.0, 0.0]  # No standard deviation provided
+    
     # Calculate NRMSE for each approach
     print("Calculating oracle NRMSE for different approaches and sizes...")
     
@@ -258,57 +266,52 @@ def generate_simple_comparison_plot():
         improvement = ((original_avg_nrmse - oracle_mean) / original_avg_nrmse * 100) if oracle_mean else 0
         print(f"  Gaussian {num_samples} samples: {oracle_mean:.4f}±{oracle_std:.4f} ({improvement:.1f}% improvement)")
     
+    # Hybrid Scaling (manual data)
+    print("  Manual hybrid scaling data:")
+    for i, num_samples in enumerate(num_samples_range):
+        improvement = ((original_avg_nrmse - hybrid_nrmse_means[i]) / original_avg_nrmse * 100)
+        print(f"  Hybrid {num_samples} samples: {hybrid_nrmse_means[i]:.4f}±{hybrid_nrmse_stds[i]:.4f} ({improvement:.1f}% improvement)")
+    
     # Create the comparison plot
     fig, ax = plt.subplots()
     
     # Colors and styling
-    color_baseline = 'black'
     color_rephrasing = '#1f77b4'  # Blue
     color_variability = '#ff7f0e'  # Orange
     color_gaussian = '#2ca02c'  # Green
+    color_hybrid = '#d62728'  # Red
     
     marker_rephrasing = 'o'  # Circle
     marker_variability = 's'  # Square
     marker_gaussian = 'D'  # Diamond
+    marker_hybrid = '^'  # Triangle
     
-    # Add baseline for original instruction
-    ax.axhline(y=original_avg_nrmse, color=color_baseline, linestyle='-', linewidth=2.0, 
-               label='Original Instruction Baseline')
-    
-    # Plot each approach with variance regions
+    # Plot each approach without variance regions using training FLOPS on x-axis
     # Instruction Rephrasing
-    ax.plot(num_samples_range, rephrasing_nrmse_means, label='Instruction Rephrasing (Oracle)', 
+    ax.plot(training_flops, rephrasing_nrmse_means, label='Instruction Rephrasing', 
             color=color_rephrasing, marker=marker_rephrasing, markersize=10, linestyle='-', linewidth=3.0)
-    ax.fill_between(num_samples_range, 
-                    np.array(rephrasing_nrmse_means) - np.array(rephrasing_nrmse_stds),
-                    np.array(rephrasing_nrmse_means) + np.array(rephrasing_nrmse_stds),
-                    color=color_rephrasing, alpha=0.2)
     
     # Repeated Sampling (Variability)
-    ax.plot(num_samples_range, variability_nrmse_means, label='Repeated Sampling (Oracle)', 
+    ax.plot(training_flops, variability_nrmse_means, label='Repeated Sampling', 
             color=color_variability, marker=marker_variability, markersize=10, linestyle='-', linewidth=3.0)
-    ax.fill_between(num_samples_range, 
-                    np.array(variability_nrmse_means) - np.array(variability_nrmse_stds),
-                    np.array(variability_nrmse_means) + np.array(variability_nrmse_stds),
-                    color=color_variability, alpha=0.2)
     
     # Gaussian Perturbation
-    ax.plot(num_samples_range, gaussian_nrmse_means, label='Gaussian Perturbation (Oracle)', 
+    ax.plot(training_flops, gaussian_nrmse_means, label='Gaussian Perturbation', 
             color=color_gaussian, marker=marker_gaussian, markersize=10, linestyle='-', linewidth=3.0)
-    ax.fill_between(num_samples_range, 
-                    np.array(gaussian_nrmse_means) - np.array(gaussian_nrmse_stds),
-                    np.array(gaussian_nrmse_means) + np.array(gaussian_nrmse_stds),
-                    color=color_gaussian, alpha=0.2)
+    
+    # Hybrid Scaling
+    ax.plot(training_flops, hybrid_nrmse_means, label='Hybrid Scaling', 
+            color=color_hybrid, marker=marker_hybrid, markersize=10, linestyle='-', linewidth=3.0)
     
     # Axis labels and scale
-    ax.set_xlabel("Proposal Distribution Size (Number of Candidates)")
-    ax.set_ylabel("Action Error (Average NRMSE)")
+    ax.set_xlabel("Total Inference FLOPS")
+    ax.set_ylabel("Oracle Action Error (Average NRMSE)")
     ax.set_xscale('log')
-    ax.set_xticks(num_samples_range)
-    ax.set_xticklabels([str(t) for t in num_samples_range])
+    ax.set_xticks(training_flops)
+    ax.set_xticklabels(['10¹²', '10¹³', '10¹⁴'])
     
     # Set y-axis limits to specific range
-    ax.set_ylim(0.06, 0.17)
+    ax.set_ylim(0.02, 0.17)
     
     # Grid and border
     ax.grid(True, linestyle='--', alpha=0.7)
@@ -323,7 +326,7 @@ def generate_simple_comparison_plot():
     legend.get_frame().set_linewidth(1.5)
     
     # Title
-    ax.set_title('Action Generation Approaches: 1, 10, 100 Candidates\nwith Oracle Selection from Proposal Distributions', 
+    ax.set_title('Oracle Action Error vs Training FLOPS\nfor Different Action Generation Approaches', 
                  fontsize=18, pad=20)
     
     # Save plot
@@ -341,7 +344,8 @@ def generate_simple_comparison_plot():
     approaches = [
         ("Instruction Rephrasing", rephrasing_nrmse_means, rephrasing_nrmse_stds),
         ("Repeated Sampling", variability_nrmse_means, variability_nrmse_stds),
-        ("Gaussian Perturbation", gaussian_nrmse_means, gaussian_nrmse_stds)
+        ("Gaussian Perturbation", gaussian_nrmse_means, gaussian_nrmse_stds),
+        ("Hybrid Scaling", hybrid_nrmse_means, hybrid_nrmse_stds)
     ]
     
     # Show detailed breakdown for each approach
@@ -356,18 +360,23 @@ def generate_simple_comparison_plot():
     # Save numerical results
     results_df = pd.DataFrame({
         'proposal_distribution_size': num_samples_range,
+        'training_flops': training_flops,
         'rephrasing_nrmse_mean': rephrasing_nrmse_means,
         'rephrasing_nrmse_std': rephrasing_nrmse_stds,
         'variability_nrmse_mean': variability_nrmse_means,
         'variability_nrmse_std': variability_nrmse_stds,
         'gaussian_nrmse_mean': gaussian_nrmse_means,
         'gaussian_nrmse_std': gaussian_nrmse_stds,
+        'hybrid_nrmse_mean': hybrid_nrmse_means,
+        'hybrid_nrmse_std': hybrid_nrmse_stds,
         'rephrasing_improvement_percent': [((original_avg_nrmse - nrmse) / original_avg_nrmse * 100) if nrmse else 0 
                                          for nrmse in rephrasing_nrmse_means],
         'variability_improvement_percent': [((original_avg_nrmse - nrmse) / original_avg_nrmse * 100) if nrmse else 0 
                                           for nrmse in variability_nrmse_means],
         'gaussian_improvement_percent': [((original_avg_nrmse - nrmse) / original_avg_nrmse * 100) if nrmse else 0 
-                                       for nrmse in gaussian_nrmse_means]
+                                       for nrmse in gaussian_nrmse_means],
+        'hybrid_improvement_percent': [((original_avg_nrmse - nrmse) / original_avg_nrmse * 100) if nrmse else 0 
+                                     for nrmse in hybrid_nrmse_means]
     })
     results_df.to_csv('action_generation_simple_comparison_results.csv', index=False)
     print(f"\nNumerical results saved as: action_generation_simple_comparison_results.csv")
@@ -394,10 +403,11 @@ def main():
     results = generate_simple_comparison_plot()
     
     print(f"\n=== Summary ===")
-    print("Generated simplified comparison of three action generation approaches for 1, 10, 100 samples:")
+    print("Generated simplified comparison of four action generation approaches for 1, 10, 100 samples:")
     print("1. Instruction Rephrasing: Using different phrasings of the same instruction")
     print("2. Repeated Sampling: Using temperature-based variability with the same instruction")
     print("3. Gaussian Perturbation: Using statistical perturbation of action distributions")
+    print("4. Hybrid Scaling: Manual data points showing combined approach performance")
     print("\nAll approaches use oracle selection (perfect knowledge) to choose the best candidate.")
 
 if __name__ == "__main__":

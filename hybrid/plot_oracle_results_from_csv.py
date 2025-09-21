@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-Plot oracle verifier results from saved CSV data.
+Plot oracle verifier results from embedded data.
 
-This script reads the oracle_rephrases_scaling_results.csv file and generates
-the same plot showing oracle performance vs samples per rephrase for different
-numbers of rephrases.
+This script contains the oracle verifier performance data embedded directly
+and generates a plot showing oracle performance vs samples per rephrase for 
+different numbers of rephrases.
 """
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
 # Set up the matplotlib parameters with larger fonts for a publication-quality figure
 plt.rcParams.update({
@@ -25,17 +24,74 @@ plt.rcParams.update({
     'text.usetex': False,
 })
 
-def plot_oracle_results_from_csv(csv_file_path):
+def plot_oracle_results():
     """
-    Generate the oracle verifier plot from saved CSV results.
-    
-    Args:
-        csv_file_path: Path to the CSV file containing oracle results
+    Generate the oracle verifier plot from embedded data.
     """
     
-    # Load the CSV data
-    print(f"Loading oracle results from: {csv_file_path}")
-    df = pd.read_csv(csv_file_path)
+    # Embedded oracle results data
+    oracle_data = [
+        [1, 1, 0.1603390303764664, 3.694852775178287],
+        [1, 2, 0.14130218929586325, 15.129035573081179],
+        [1, 4, 0.12666522365277375, 23.92050155533578],
+        [1, 8, 0.053826734253342785, 67.66980843823055],
+        [1, 16, 0.05109756767807141, 69.30903993548642],
+        [1, 32, 0.04888225774632862, 70.63963142418494],
+        [1, 64, 0.0476630487511084, 71.3719303629201],
+        [1, 128, 0.045513571697352394, 72.66298035637654],
+        [2, 1, 0.13858897921116284, 16.75868305220985],
+        [2, 2, 0.12329264975444483, 25.946185663831105],
+        [2, 4, 0.11098607717093063, 33.3379372648327],
+        [2, 8, 0.048959123412499285, 70.59346325614926],
+        [2, 16, 0.046182320123680135, 72.26130700521155],
+        [2, 32, 0.04399364299240911, 73.57590191613096],
+        [2, 64, 0.042649086341030526, 74.38348897686782],
+        [2, 128, 0.041366332776590686, 75.15395497374013],
+        [4, 1, 0.1204957902157559, 27.626075887740786],
+        [4, 2, 0.10561786758856542, 36.56226893847154],
+        [4, 4, 0.09467232407124185, 43.13653957873017],
+        [4, 8, 0.042844546269913214, 74.26608900766878],
+        [4, 16, 0.03916073554147445, 76.47871268212717],
+        [4, 32, 0.03708827889955499, 77.72350156196816],
+        [4, 64, 0.03658094209183112, 78.0282255324556],
+        [4, 128, 0.03437798871578624, 79.35139524797208],
+        [8, 1, 0.10531546139604514, 36.743904519178145],
+        [8, 2, 0.09183788437021523, 44.83900174322205],
+        [8, 4, 0.08022594395685306, 51.8135333245159],
+        [8, 8, 0.03539002818935925, 78.74352946338465],
+        [8, 16, 0.031486659935994796, 81.08802695367339],
+        [8, 32, 0.030096892449701883, 81.92276919990913],
+        [8, 64, 0.02997903788798603, 81.99355671116271],
+        [8, 128, 0.028027947144968705, 83.16544904962885],
+        [16, 1, 0.0919721794971851, 44.7583394619045],
+        [16, 2, 0.07935814378093344, 52.334764016178696],
+        [16, 4, 0.06993926090421514, 57.99206966412931],
+        [16, 8, 0.031166097174692892, 81.28056799529931],
+        [16, 16, 0.029066684240780183, 82.54154775307533],
+        [16, 32, 0.028065591189234275, 83.14283873935928],
+        [16, 64, 0.026668892646895828, 83.98174401671301],
+        [16, 128, 0.025190781679560813, 84.86954840214301],
+        [32, 1, 0.08070449270707433, 51.52610045345448],
+        [32, 2, 0.07228534086630459, 56.58293318862652],
+        [32, 4, 0.0642512246609487, 61.40850025212603],
+        [32, 8, 0.027330583009847795, 83.58430998164546],
+        [32, 16, 0.025475640464936094, 84.69845239888394],
+        [32, 32, 0.023856411945122016, 85.67101684950576],
+        [32, 64, 0.02283370663010111, 86.2852889060315],
+        [32, 128, 0.022046465586119054, 86.75813300683531],
+        [64, 1, 0.0737676267130893, 55.69262122672492],
+        [64, 2, 0.06582479425358795, 60.463360126656816],
+        [64, 4, 0.05941463791262198, 64.31352093093133],
+        [64, 8, 0.02515645883021043, 84.89016388829198],
+        [64, 16, 0.023138680743496887, 86.10211094355175],
+        [64, 32, 0.022219584912184027, 86.65415157358724],
+        [64, 64, 0.0210514016079542, 87.35580272387351],
+        [64, 128, 0.020778986560857204, 87.51942458908835]
+    ]
+    
+    # Create DataFrame from embedded data
+    df = pd.DataFrame(oracle_data, columns=['num_rephrases', 'samples_per_rephrase', 'oracle_nrmse', 'improvement_percent'])
+    print(f"Using embedded oracle results data")
     
     print(f"Loaded {len(df)} data points")
     print(f"Number of rephrases: {sorted(df['num_rephrases'].unique())}")
@@ -57,22 +113,6 @@ def plot_oracle_results_from_csv(csv_file_path):
     # Get unique rephrase counts and sort them, excluding 1 rephrase
     rephrase_counts = sorted([r for r in df['num_rephrases'].unique() if r != 1])
     
-    # Add repeated sampling curve first (so it appears in front)
-    repeated_thresholds = [1, 2, 4, 8, 16, 32, 64, 128]
-    repeated_vla_nrmse = [0.16, 0.1395698519403141, 0.12382259063373457, 0.10865227458014033,
-                          0.09702733800476325, 0.09015774016003288, 0.08320682061341735, 0.07728755638551704]
-    
-    ax.plot(repeated_thresholds, repeated_vla_nrmse, 'o-', linewidth=3.0, markersize=10,
-           color='red', marker='*', label='Repeated Sampling', markeredgewidth=1, 
-           markeredgecolor='white', zorder=5)
-    
-    # Add instruction rephrasing (greedy) curve second (so it appears in front)
-    greedy_thresholds = [1, 2, 4, 8, 16, 32, 64, 128]
-    greedy_vla_nrmse = [0.16, 0.135, 0.12, 0.1014, 0.09, 0.08187, 0.074474, 0.07022]
-    
-    ax.plot(greedy_thresholds, greedy_vla_nrmse, 'o-', linewidth=3.0, markersize=10,
-           color='orange', marker='P', label='Instruction Rephrasing', markeredgewidth=1, 
-           markeredgecolor='white', zorder=4)
     
     # Plot each rephrase count as a separate curve (behind the main curves)
     for i, num_rephrases in enumerate(rephrase_counts):
@@ -94,25 +134,21 @@ def plot_oracle_results_from_csv(csv_file_path):
             augmentation_note = " (augmented)" if row['samples_per_rephrase'] > 4 else ""
             print(f"  {int(row['samples_per_rephrase']):3d} samples: {row['oracle_nrmse']:.4f} NRMSE ({row['improvement_percent']:.1f}% improvement){augmentation_note}")
     
-    # Add baseline line for original instruction (behind other curves)
-    ax.axhline(y=baseline_nrmse, color='gray', linestyle='--', linewidth=1.5, alpha=0.7, 
-               label='Original Instruction Baseline', zorder=1)
     
     # Axis labels and formatting
     ax.set_xlabel("Number of Generated Actions per Rephrase")
     ax.set_ylabel("Action Error (Average NRMSE)")
     ax.set_xscale('log', base=2)
     
-    # Set x-axis ticks (combine oracle, repeated sampling, and greedy thresholds)
+    # Set x-axis ticks
     samples_per_rephrase_list = sorted(df['samples_per_rephrase'].unique())
-    all_thresholds = sorted(set(samples_per_rephrase_list + repeated_thresholds + greedy_thresholds))
-    ax.set_xticks(all_thresholds)
-    ax.set_xticklabels([str(t) for t in all_thresholds])
+    ax.set_xticks(samples_per_rephrase_list)
+    ax.set_xticklabels([str(t) for t in samples_per_rephrase_list])
     
-    # Set y-axis limits to better show the improvement (include repeated sampling and greedy data)
-    all_nrmse_values = list(df['oracle_nrmse'].values) + repeated_vla_nrmse + greedy_vla_nrmse
+    # Set y-axis limits to better show the improvement
+    all_nrmse_values = list(df['oracle_nrmse'].values)
     y_min = min(all_nrmse_values) * 0.9
-    y_max = baseline_nrmse * 1.05
+    y_max = 0.143
     ax.set_ylim(y_min, y_max)
     
     # Grid and border
@@ -123,45 +159,12 @@ def plot_oracle_results_from_csv(csv_file_path):
         spine.set_linewidth(1.5)
         spine.set_color('black')
     
-    # Get handles and labels for legend reordering
-    handles, labels = ax.get_legend_handles_labels()
-    
-    # Find the repeated sampling and greedy entries and move them to the top
-    repeated_idx = None
-    greedy_idx = None
-    
-    for i, label in enumerate(labels):
-        if 'Repeated Sampling' in label:
-            repeated_idx = i
-        elif 'Instruction Rephrasing (Greedy)' in label:
-            greedy_idx = i
-    
-    # Reorder: Repeated Sampling first, then Greedy, then the rest
-    new_handles = []
-    new_labels = []
-    
-    # Add repeated sampling first
-    if repeated_idx is not None:
-        new_handles.append(handles[repeated_idx])
-        new_labels.append(labels[repeated_idx])
-    
-    # Add greedy second
-    if greedy_idx is not None:
-        new_handles.append(handles[greedy_idx])
-        new_labels.append(labels[greedy_idx])
-    
-    # Add remaining entries (excluding repeated sampling and greedy)
-    for i, (handle, label) in enumerate(zip(handles, labels)):
-        if i != repeated_idx and i != greedy_idx:
-            new_handles.append(handle)
-            new_labels.append(label)
-    
-    # Create legend with reordered entries
-    legend = ax.legend(new_handles, new_labels, bbox_to_anchor=(1.05, 1), loc='upper left', framealpha=0.95, edgecolor='black', fontsize=10)
+    # Create legend
+    legend = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', framealpha=0.95, edgecolor='black', fontsize=10)
     legend.get_frame().set_linewidth(1.5)
     
     # Title
-    ax.set_title('Oracle Verifier vs Repeated Sampling: Performance Comparison\nAcross Different Sample Counts (with Gaussian Augmentation)', 
+    ax.set_title('Oracle Verifier Performance Comparison\nAcross Different Sample Counts (with Gaussian Augmentation)', 
                  fontsize=14, pad=20)
     
     # Save plot
@@ -186,35 +189,6 @@ def plot_oracle_results_from_csv(csv_file_path):
     print(f"  {int(best_result['num_rephrases'])} rephrases with {int(best_result['samples_per_rephrase'])} samples per rephrase")
     print(f"  NRMSE: {best_result['oracle_nrmse']:.4f} ({best_result['improvement_percent']:.1f}% improvement)")
     
-    # Repeated sampling results
-    print(f"\n=== Repeated Sampling Results ===")
-    best_repeated_nrmse = min(repeated_vla_nrmse)
-    best_repeated_threshold = repeated_thresholds[repeated_vla_nrmse.index(best_repeated_nrmse)]
-    best_repeated_improvement = (1 - best_repeated_nrmse/baseline_nrmse) * 100
-    
-    print(f"Best Repeated Sampling Performance:")
-    print(f"  {best_repeated_threshold} samples threshold")
-    print(f"  NRMSE: {best_repeated_nrmse:.4f} ({best_repeated_improvement:.1f}% improvement)")
-    
-    print(f"\nRepeated Sampling Performance by Threshold:")
-    for threshold, nrmse in zip(repeated_thresholds, repeated_vla_nrmse):
-        improvement = (1 - nrmse/baseline_nrmse) * 100
-        print(f"  {threshold:3d} samples: {nrmse:.4f} NRMSE ({improvement:.1f}% improvement)")
-    
-    # Instruction rephrasing (greedy) results
-    print(f"\n=== Instruction Rephrasing (Greedy) Results ===")
-    best_greedy_nrmse = min(greedy_vla_nrmse)
-    best_greedy_threshold = greedy_thresholds[greedy_vla_nrmse.index(best_greedy_nrmse)]
-    best_greedy_improvement = (1 - best_greedy_nrmse/baseline_nrmse) * 100
-    
-    print(f"Best Greedy Performance:")
-    print(f"  {best_greedy_threshold} samples threshold")
-    print(f"  NRMSE: {best_greedy_nrmse:.4f} ({best_greedy_improvement:.1f}% improvement)")
-    
-    print(f"\nGreedy Performance by Threshold:")
-    for threshold, nrmse in zip(greedy_thresholds, greedy_vla_nrmse):
-        improvement = (1 - nrmse/baseline_nrmse) * 100
-        print(f"  {threshold:3d} samples: {nrmse:.4f} NRMSE ({improvement:.1f}% improvement)")
     
     # Analyze the effect of augmentation (excluding 1 rephrase)
     print(f"\nAugmentation Effect Analysis:")
@@ -272,16 +246,8 @@ def analyze_diminishing_returns(df):
             prev_samples = row['samples_per_rephrase']
 
 if __name__ == "__main__":
-    # Check if the CSV file exists
-    csv_file = '/root/validate_clip_verifier/oracle_rephrases_scaling_results.csv'
-    
-    if not os.path.exists(csv_file):
-        print(f"Error: CSV file not found: {csv_file}")
-        print("Please run generate_plot_actions_per_instruction.py first to generate the data.")
-        exit(1)
-    
-    # Generate the plot from CSV data
-    df = plot_oracle_results_from_csv(csv_file)
+    # Generate the plot from embedded data
+    df = plot_oracle_results()
     
     # Perform additional analysis
     analyze_diminishing_returns(df)

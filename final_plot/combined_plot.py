@@ -12,13 +12,13 @@ def create_combined_plot():
     
     # LEFT PLOT DATA
     proposal_distribution_sizes = [1, 10, 100]
-    training_flops = [3.7e12, 3.7e13, 3.7e14]  # Total inference FLOPS
+    training_flops = [3.7e12, 3.7e13, 3.7e14, 3.7e15]  # Total inference FLOPS
     
     # NRMSE values for each approach
-    rephrasing_nrmse_means = [0.16169976855118576, 0.09869752183810761, 0.07053206710866165]
-    variability_nrmse_means = [0.16255906402794928, 0.10831067086202477, 0.08272804579448052]
-    gaussian_nrmse_means = [0.16255906402794928, 0.11937213896670357, 0.0921677874498369]
-    hybrid_nrmse_means = [0.16169, 0.09, 0.033]
+    rephrasing_nrmse_means = [0.16169976855118576, 0.09869752183810761, 0.07053206710866165, 0.05237526]
+    variability_nrmse_means = [0.16255906402794928, 0.10831067086202477, 0.08272804579448052, 0.0648]
+    gaussian_nrmse_means = [0.16255906402794928, 0.11937213896670357, 0.0921677874498369, 0.0734]
+    hybrid_nrmse_means = [0.16169, 0.09, 0.033, 0.0190138680743496887]
     
     # RIGHT PLOT DATA
     oracle_data = [
@@ -118,7 +118,7 @@ def create_combined_plot():
     axes[0].set_ylabel('Oracle Action Error', fontsize=11, weight='bold')
     axes[0].set_xscale('log')
     axes[0].set_xticks(training_flops)
-    axes[0].set_xticklabels(['10¹²', '10¹³', '10¹⁴'])
+    axes[0].set_xticklabels(['10¹²', '10¹³', '10¹⁴', '10¹⁵'])
     axes[0].set_ylim(0, 0.175)
     axes[0].grid(False)
     axes[0].tick_params(axis='both', which='major', labelsize=11)
